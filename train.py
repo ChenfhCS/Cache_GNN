@@ -35,9 +35,9 @@ def main(args):
 
     g = data[0]
     if args.gpu < 0:
-        cuda = False
+        to_cuda = False
     else:
-        cuda = True
+        to_cuda = True
         g = g.to(args.gpu)
 
     features = g.ndata['feat']
@@ -80,11 +80,11 @@ def main(args):
                 args.n_layers,
                 features,
                 args.cache,
-                cuda,
+                to_cuda,
                 F.relu,
                 args.dropout)
 
-    if cuda:
+    if to_cuda:
         model.cuda()
     loss_fcn = torch.nn.CrossEntropyLoss()
 
