@@ -122,8 +122,9 @@ def main(args):
     acc = evaluate(model, features, labels, test_mask)
     print("Test Accuracy {:.4f}".format(acc))
     print("Time Cost {:.4f}".format(time.time() - start))
-    df = pd.DataFrame(np.array(Accuracy))
-    df.to_csv('{}_cache_{}.csv'.format(args.dataset, args.cache))
+    if args.save:
+        df = pd.DataFrame(np.array(Accuracy))
+        df.to_csv('{}_cache_{}.csv'.format(args.dataset, args.cache))
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='GCN')
