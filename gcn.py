@@ -69,6 +69,7 @@ class GCNLayer(nn.Module):
         norm_tilde = torch.diag(norm) # 
         if cuda:
             norm_tilde.cuda()
+            self.adj.cuda()
         self.adj = torch.mm(torch.mm(norm_tilde, self.adj), norm_tilde)  # D^(-0/5) * A * D^(-0/5)
 
     def reset_parameters(self):
@@ -144,6 +145,7 @@ class GCN(nn.Module):
         norm_tilde = torch.diag(norm) # 
         if self.cuda:
             norm_tilde.cuda()
+            adj.cuda()
         adj = torch.mm(torch.mm(norm_tilde, adj), norm_tilde)  # D^(-0/5) * A * D^(-0/5)
         
         # step2: aggregation
