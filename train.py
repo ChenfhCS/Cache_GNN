@@ -80,6 +80,7 @@ def main(args):
                 args.n_layers,
                 features,
                 args.cache,
+                cuda,
                 F.relu,
                 args.dropout)
 

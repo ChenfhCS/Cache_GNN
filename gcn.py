@@ -46,6 +46,7 @@ class GCNLayer(nn.Module):
                  out_feats,
                  activation,
                  dropout,
+                 cuda,
                  bias=True,
                  cache=False):
         super(GCNLayer, self).__init__()
@@ -66,6 +67,8 @@ class GCNLayer(nn.Module):
         degs = g.in_degrees().float()  # degrees of all nodes (1-dimension tensor)
         norm = torch.pow(degs, -0.5)  # 
         norm_tilde = torch.diag(norm) # 
+        if cuda:
+            norm_tilde.cuda()
         self.adj = torch.mm(torch.mm(norm_tilde, self.adj), norm_tilde)  # D^(-0/5) * A * D^(-0/5)
 
     def reset_parameters(self):
@@ -102,19 +105,21 @@ class GCN(nn.Module):
                  n_layers,
                  features,
                  Cache,
+                 cuda,
                  activation,
                  dropout):
         super(GCN, self).__init__()
         self.layers = nn.ModuleList()
         # input layer
-        self.layers.append(GCNLayer(g, in_feats, n_hidden, activation, dropout, cache=Cache))
+        self.layers.append(GCNLayer(g, in_feats, n_hidden, activation, dropout, cuda, cache=Cache))
         # hidden layers
         for i in range(n_layers - 1):
-            self.layers.append(GCNLayer(g, n_hidden, n_hidden, activation, dropout))
+            self.layers.append(GCNLayer(g, n_hidden, n_hidden, activation, dropout, cuda))
         # output layer
-        self.layers.append(GCNLayer(g, n_hidden, n_classes, None, dropout))
+        self.layers.append(GCNLayer(g, n_hidden, n_classes, None, dropout, cuda))
 
         self.Cache = Cache
+        self.cuda = cuda
         if Cache:
             self.cache = self.cache_init(g, features, dropout)
 
@@ -137,6 +142,8 @@ class GCN(nn.Module):
         degs = g.in_degrees().float()  # degrees of all nodes (1-dimension tensor)
         norm = torch.pow(degs, -0.5)  # 
         norm_tilde = torch.diag(norm) # 
+        if self.cuda:
+            norm_tilde.cuda()
         adj = torch.mm(torch.mm(norm_tilde, adj), norm_tilde)  # D^(-0/5) * A * D^(-0/5)
         
         # step2: aggregation
