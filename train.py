@@ -85,7 +85,7 @@ def main(args):
                 args.dropout)
 
     if to_cuda:
-        model.cuda()
+        model.to(args.gpu)
     loss_fcn = torch.nn.CrossEntropyLoss()
 
     # use optimizer
