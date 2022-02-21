@@ -72,7 +72,6 @@ class GCNLayer(nn.Module):
         norm_tilde = torch.diag(norm) # 
         if cuda:
             norm_tilde.cuda()
-            self.adj.cuda()
         print(norm_tilde.device, self.adj.device)
         self.adj = torch.mm(torch.mm(norm_tilde, self.adj), norm_tilde)  # D^(-0/5) * A * D^(-0/5)
 
@@ -141,7 +140,10 @@ class GCN(nn.Module):
         return h
     
     def cache_init(self, g, h, dropout):
-        adj = g.adj().to_dense()
+        if self.cuda:
+            adj = g.adj().to_dense().cuda()
+        else:
+            adj = g.adj().to_dense()
 
         # normalization
         degs = g.in_degrees().float()  # degrees of all nodes (1-dimension tensor)
@@ -149,7 +151,6 @@ class GCN(nn.Module):
         norm_tilde = torch.diag(norm) # 
         if self.cuda:
             norm_tilde.cuda()
-            adj.cuda()
         adj = torch.mm(torch.mm(norm_tilde, adj), norm_tilde)  # D^(-0/5) * A * D^(-0/5)
         
         # step2: aggregation
