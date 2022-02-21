@@ -1,6 +1,7 @@
 import argparse
 import time
 import numpy as np
+import pandas as pd
 import torch
 import torch.nn.functional as F
 import dgl
@@ -95,6 +96,8 @@ def main(args):
 
     # initialize graph
     dur = []
+    start = time.time()
+    Accuracy = []
     for epoch in range(args.n_epochs):
         model.train()
         if epoch >= 3:
@@ -114,11 +117,13 @@ def main(args):
         print("Epoch {:05d} | Time(s) {:.4f} | Loss {:.4f} | Accuracy {:.4f} | "
               "ETputs(KTEPS) {:.2f}". format(epoch, np.mean(dur), loss.item(),
                                              acc, n_edges / np.mean(dur) / 1000))
-
+        Accuracy.append(acc)
     print()
     acc = evaluate(model, features, labels, test_mask)
     print("Test Accuracy {:.4f}".format(acc))
-
+    print("Time Cost {:.4f}".format(time.time() - start))
+    df = pd.DataFrame(np.array(Accuracy))
+    df.to_csv('{}_cache_{}.csv'.format(args.dataset, args.cache))
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='GCN')
@@ -140,7 +145,9 @@ if __name__ == '__main__':
     parser.add_argument("--weight-decay", type=float, default=5e-4,
             help="Weight for L2 loss")
     parser.add_argument("--cache", type=bool, default=False,
-            help="Cache the aggregated content for the first layer")      
+            help="Cache the aggregated content for the first layer")    
+    parser.add_argument("--save", type=bool, default=False,
+            help="Save accuracy to csv file")    
     args = parser.parse_args()
     print(args)
 

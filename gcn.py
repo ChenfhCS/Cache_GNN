@@ -72,7 +72,6 @@ class GCNLayer(nn.Module):
         norm_tilde = torch.diag(norm) # 
         if cuda:
             norm_tilde.cuda()
-        print(norm_tilde.device, self.adj.device)
         self.adj = torch.mm(torch.mm(norm_tilde, self.adj), norm_tilde)  # D^(-0/5) * A * D^(-0/5)
 
     def reset_parameters(self):
