@@ -59,7 +59,10 @@ class GCNLayer(nn.Module):
         # self.node_update = NodeApplyModule(out_feats, activation, bias)
         self.reset_parameters()
 
-        self.adj = g.adj().to_dense()
+        if cuda:
+            self.adj = g.adj().to_dense().cuda()
+        else:
+            self.adj = g.adj().to_dense()
         self.activation = activation
         self.cache = cache
 
