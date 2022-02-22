@@ -207,7 +207,8 @@ def main(args):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='GCN')
-    register_data_args(parser)
+    parser.add_argument("--dataset", type=str, default="cora",
+            help="Datasets:('cora', 'pumbed', 'reddit')")
     parser.add_argument("--dropout", type=float, default=0.5,
             help="dropout probability")
     parser.add_argument("--gpu", type=int, default=-1,
