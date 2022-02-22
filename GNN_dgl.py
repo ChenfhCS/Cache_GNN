@@ -178,6 +178,7 @@ def main(args):
 
     # initialize graph
     dur = []
+    start = time.time()
     for epoch in range(args.n_epochs):
         model.train()
         if epoch >= 3:
@@ -201,6 +202,7 @@ def main(args):
     print()
     acc = evaluate(model, features, labels, test_mask)
     print("Test Accuracy {:.4f}".format(acc))
+    print("Time Cost {:.4f}".format(time.time() - start))
 
 
 if __name__ == '__main__':
