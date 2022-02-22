@@ -6,7 +6,7 @@ import torch
 import torch.nn.functional as F
 import dgl
 from dgl.data import register_data_args
-from dgl.data import CoraGraphDataset, CiteseerGraphDataset, PubmedGraphDataset
+from dgl.data import CoraGraphDataset, CiteseerGraphDataset, PubmedGraphDataset, RedditDataset
 
 from gcn import GCN
 #from gcn_mp import GCN
@@ -31,6 +31,8 @@ def main(args):
         data = CiteseerGraphDataset()
     elif args.dataset == 'pubmed':
         data = PubmedGraphDataset()
+    elif args.dataset == 'reddit':
+        data = RedditDataset()
     else:
         raise ValueError('Unknown dataset: {}'.format(args.dataset))
 
