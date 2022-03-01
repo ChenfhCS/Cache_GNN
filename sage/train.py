@@ -54,9 +54,9 @@ def run(args, device, data):
     train_nid = train_g.ndata.pop('train_mask').nonzero().squeeze()
     val_nid = val_g.ndata.pop('val_mask').nonzero().squeeze()
 
-    # init the cache server
-    # Cache_server = GraphCacheServer(train_g, train_g.number_of_nodes(), device)
-    # Cache_server.cache_init(['features'])
+    #init the cache server
+    Cache_server = GraphCacheServer(train_g, train_g.number_of_nodes(), device)
+    Cache_server.cache_init(['features'])
     # print(Cache_server.gpu_cache)
 
     if args.graph_device == 'gpu':

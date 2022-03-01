@@ -5,7 +5,7 @@ import numpy as np
 import numba
 import torch
 from dgl import DGLGraph
-from dgl.frame import Frame, FrameRef
+# from dgl.frame import Frame, FrameRef
 import dgl.utils
 
 class GraphCacheServer:
@@ -61,8 +61,8 @@ class GraphCacheServer:
 
     def get_features(self, nids, embed_names, to_gpu=False):
         ''' 
-            Get features from CPU, embed_names = ['features', 'norm']?
-            nids: index of choen nodes for cache
+        Get features from CPU, embed_names = ['features', 'norm']?
+        nids: index of choen nodes for cache
         '''
         if to_gpu:
             embed_dict = {name: self.graph.nodes[nids].data[name].cuda(self.device, non_blocking=True)\
@@ -74,10 +74,10 @@ class GraphCacheServer:
     def cache_data(self, nids, data, is_full=False):
         num = nids.size(0)  # number of chosen nodes
         '''
-            id map from local idx to cache idx.
-            For example, cache_id = [0,3,2,5,1], total 6 nodes,
-            IdMap_local_cache = ['0', '4', '2', '1', 0, '3'];
-            IdMap_local_cache[local_id] = cache_id.
+        id map from local idx to cache idx.
+        For example, cache_id = [0,3,2,5,1], total 6 nodes,
+        IdMap_local_cache = ['0', '4', '2', '1', 0, '3'];
+        IdMap_local_cache[local_id] = cache_id.
         '''
         self.IdMap_local_cache[nids] = torch.arange(num).cuda(self.device)
         self.cached_num = num
