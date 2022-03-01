@@ -180,7 +180,7 @@ if __name__ == '__main__':
 
     if args.inductive:
         train_g, val_g, test_g = inductive_split(g)
-        train_nfeat = train_g.ndata.pop('features')
+        train_nfeat = train_g.ndata('features')  # without deleting 'features' in graph
         val_nfeat = val_g.ndata.pop('features')
         test_nfeat = test_g.ndata.pop('features')
         train_labels = train_g.ndata.pop('labels')
