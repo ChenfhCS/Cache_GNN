@@ -1,3 +1,4 @@
+from email.policy import default
 import dgl
 import numpy as np
 import torch as th
@@ -56,8 +57,9 @@ def run(args, device, data):
     val_nid = val_g.ndata.pop('val_mask').nonzero().squeeze()
 
     #init the cache server
-    Cache_server = GraphCacheServer(train_g, train_g.number_of_nodes(), device)
-    Cache_server.cache_init(['features'])
+    if args.cache_method != 'none':
+        Cache_server = GraphCacheServer(train_g, train_g.number_of_nodes(), device, capacity = 1000)
+        Cache_server.cache_init(['features'])
     # print(Cache_server.gpu_cache)
 
     if args.graph_device == 'gpu':
@@ -102,12 +104,14 @@ def run(args, device, data):
         tic_step = time.time()
         for step, (input_nodes, seeds, blocks) in enumerate(dataloader):
             # Load the input features as well as output labels
-            # batch_inputs, batch_labels = load_subtensor(train_nfeat, train_labels,
-            #                                             seeds, input_nodes, device)
 
-            # load data to GPU with cache
-            batch_inputs = Cache_server.fetch_data(input_nodes)
-            batch_labels = train_labels[seeds].to(device)
+            if args.cache_method == 'none':
+                batch_inputs, batch_labels = load_subtensor(train_nfeat, train_labels,
+                                                        seeds, input_nodes, device)
+            elif args.cache_method == 'degree':
+                # load data to GPU with cache
+                batch_inputs = Cache_server.fetch_data(input_nodes)
+                batch_labels = train_labels[seeds].to(device)
             
             blocks = [block.int().to(device) for block in blocks]
 
@@ -154,6 +158,8 @@ if __name__ == '__main__':
     argparser.add_argument('--dropout', type=float, default=0.5)
     argparser.add_argument('--num-workers', type=int, default=4,
                            help="Number of sampling processes. Use 0 for no extra process.")
+    argparser.add_argument('--cache-method', choices=('degree','L2-similarity','none'), required=True,
+                           help="Cache method to reduce the data loading time.")  
     argparser.add_argument('--inductive', action='store_true',
                            help="Inductive learning setting")
     argparser.add_argument('--graph-device', choices=('cpu', 'gpu', 'uva'), default='cpu',

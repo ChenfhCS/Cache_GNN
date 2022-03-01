@@ -9,12 +9,13 @@ from dgl import DGLGraph
 import dgl.utils
 
 class GraphCacheServer:
-    def __init__(self, graph, node_num, device):
+    def __init__(self, graph, node_num, device, capacity):
         self.graph = graph  # dgl graph
         self.device = device  # device
         self.node_num = node_num  # number of nodes in the graph
 
-        self.dims = self.graph.ndata['features'][0].size(0)
+        self.dims = self.graph.ndata['features'][0].size(0)  # feature size
+        self.capability = capacity  # cache size
 
         # masks for manage the feature locations: default in CPU
         self.gpu_flag = torch.zeros(self.node_num).bool().cuda(self.device)
@@ -39,7 +40,7 @@ class GraphCacheServer:
         
         # Stpe2: get capability
         # self.capability = int(available / (self.total_dim * 4)) 
-        self.capability = 20 # at first, we set the capability manually
+        # self.capability = s # at first, we set the capability manually
 
         # Step3: cache features
         if self.capability >= self.node_num:
