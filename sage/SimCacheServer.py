@@ -80,21 +80,28 @@ class SimCacheServer:
         '''
         {key: approximation results; value: original features}
         '''
-        # step1: delete the reduntant approximation results
-        approx_features, inverse_idx, counts = torch.unique(approx_features, sorted=False, return_inverse=True, return_counts=True, dim=0)
+        for i in range(approx_features.size(0)):
+            self.cache_content.update({approx_features[i]: data['features'][i]})
 
-        # step2: register a new tensor for the cached features
-        cache_content = []
+        self.cache_content.to(self.device)
 
-        # step3: fill the cache_content
-        start = 0
-        for i in range (approx_features.size(0)):
-            idx = inverse_idx[start:counts[i].data]
-            cache_content.append(data['features'][idx])
-            start += counts[i].data
+        # # step1: delete the reduntant approximation results
+        # approx_features, inverse_idx, counts = torch.unique(approx_features, sorted=False, return_inverse=True, return_counts=True, dim=0)
 
-        for name in data:
-            self.cache_content[name] = torch.FloatTensor(cache_content)
+        # # step2: register a new tensor for the cached features
+        # cache_content = []
+
+        # # step3: fill the cache_content
+        # start = 0
+        # for i in range (approx_features.size(0)):
+        #     idx = inverse_idx[start:counts[i].data]
+        #     cache_content.append(data['features'][idx])
+        #     start += counts[i].data
+
+        # for name in data:
+        #     self.cache_content[name] = torch.FloatTensor(cache_content)
+
+
         # for i in range (approx_features.size(0)):
         #     self.cache_content.update({:})
         #     self.cache_content = {key: }
