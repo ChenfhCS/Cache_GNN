@@ -40,8 +40,9 @@ def load_subtensor(nfeat, labels, seeds, input_nodes, device):
     """
     Extracts features and labels for a subset of nodes
     """
+    start_time = time.time()
     batch_inputs = nfeat[input_nodes].to(device)
-    print(batch_inputs)
+    print('fetch features from CPU with time cost:{:.4f}'.format(time.time()-start_time))
     batch_labels = labels[seeds].to(device)
     return batch_inputs, batch_labels
 
