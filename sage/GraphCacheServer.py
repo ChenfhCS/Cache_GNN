@@ -14,16 +14,14 @@ class GraphCacheServer:
         self.device = device  # device
         self.node_num = node_num  # number of nodes in the graph
 
-        # self.graph.ndata['features'] = self.graph.ndata.pop('feat')
-        # self.graph.ndata['labels'] = self.graph.ndata.pop('label')
+        self.dims = self.graph.ndata['features'][0].size(0)
 
         # masks for manage the feature locations: default in CPU
         self.gpu_flag = torch.zeros(self.node_num).bool().cuda(self.device)
         self.gpu_flag.requires_grad_(False)
 
         self.full_cached = False
-
-        self.gpu_cache = dict()
+        self.cache_content = dict()
 
         # id map from local id to cache id
         with torch.cuda.device(self.device):
@@ -64,7 +62,7 @@ class GraphCacheServer:
 
     def get_features(self, nids, embed_names, to_gpu=False):
         ''' 
-        Get features from CPU, embed_names = ['features', 'norm']?
+        Get features from CPU! embed_names = ['features', 'norm']?
         nids: index of choen nodes for cache
         '''
         if to_gpu:
@@ -86,21 +84,44 @@ class GraphCacheServer:
         self.cached_num = num
 
         for name in data:
-            self.gpu_cache[name] = data[name].cuda(self.device)
+            self.cache_content[name] = data[name].cuda(self.device)
         
         # setup flags
         self.gpu_flag[nids] = True
         self.full_cached = is_full
 
-    # def fetch_data(self):
-    #     '''
-    #     if full cached, all data are fetched from cache (GPU),
-    #     else, data are fetched from CPU and GPU
-    #     '''
-    #     if self.full_cached:
-
+    def fetch_data(self, input_nodes):
+        '''
+        if full cached, all data are fetched from cache (GPU),
+        else, data are fetched from CPU and GPU
+        '''
+        if self.full_cached:
+            self.fetch_data_GPU(input_nodes)
+        else:
+            self.fetch_data_GPU_CPU(input_nodes)
         
-    # def fetch_data_GPU(self):
+    def fetch_data_GPU(self, input_nodes):
+        for name in self.cache_content:
+            batch_data = self.cache_content[name][input_nodes]
+        return batch_data
 
+    def fetch_data_GPU_CPU(self, input_nodes):
+        # index of nodes in GPU and CPU
+        gpu_mask = self.gpu_flag[input_nodes]
+        nids_in_gpu = input_nodes[gpu_mask]  # still local index
+        cpu_mask = ~gpu_mask
+        nids_in_cpu = input_nodes[cpu_mask]
 
-    # def fetch_data_GPU_CPU(self):
+        batch_data = torch.cuda.FloatTensor(input_nodes.size(0), self.dims)
+
+        # obtain features from GPU
+        cache_id = self.IdMap_local_cache[nids_in_gpu]  # cache idx
+        for name in self.cache_content:
+            batch_data[gpu_mask] = self.cache_content[name][cache_id]
+        
+        #obtain features from CPU
+        cpu_content = self.get_features(nids_in_cpu, ['features'], to_gpu=True)
+        for name in self.cache_content:
+            batch_data[cpu_mask] = cpu_content[name]
+
+        return batch_data
