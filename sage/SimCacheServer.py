@@ -107,7 +107,7 @@ class SimCacheServer:
         
         batch_data = torch.cuda.FloatTensor(input_nodes.size(0), self.dims)
         for i in range (input_nodes.size(0)):
-            if self.cache_content.has_key(approx_feat[i]):
+            if approx_feat[i] in self.cache_content:
                batch_data[i] = self.cache_content.get(approx_feat[i])
             else:
                batch_data[i] = cache_features['features'][input_nodes[i]]
