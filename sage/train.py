@@ -107,7 +107,6 @@ def run(args, device, data):
 
             # load data to GPU with cache
             batch_inputs = Cache_server.fetch_data(input_nodes)
-            print(batch_inputs)
             batch_labels = train_labels[seeds].to(device)
             
             blocks = [block.int().to(device) for block in blocks]

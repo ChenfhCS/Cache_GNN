@@ -96,9 +96,9 @@ class GraphCacheServer:
         else, data are fetched from CPU and GPU
         '''
         if self.full_cached:
-            self.fetch_data_GPU(input_nodes)
+            return self.fetch_data_GPU(input_nodes)
         else:
-            self.fetch_data_GPU_CPU(input_nodes)
+            return self.fetch_data_GPU_CPU(input_nodes)
         
     def fetch_data_GPU(self, input_nodes):
         for name in self.cache_content:
@@ -123,5 +123,5 @@ class GraphCacheServer:
         cpu_content = self.get_features(nids_in_cpu, ['features'], to_gpu=True)
         for name in self.cache_content:
             batch_data[cpu_mask] = cpu_content[name]
-        print('input_data',batch_data)
+        # print('input_data',batch_data)
         return batch_data
