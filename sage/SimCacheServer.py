@@ -110,7 +110,7 @@ class SimCacheServer:
             if approx_feat[i] in self.cache_content:
                batch_data[i] = self.cache_content.get(approx_feat[i])
             else:
-               batch_data[i] = cache_features['features'][input_nodes[i]]
+               batch_data[i] = cache_features['features'][i]
 
         # # index of nodes in GPU and CPU
         # gpu_mask = self.gpu_flag[input_nodes]
