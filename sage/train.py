@@ -12,7 +12,8 @@ import tqdm
 
 from model import SAGE
 from load_data import load_reddit, inductive_split, load_ogb
-from GraphCacheServer import GraphCacheServer
+from DegCacheServer import DegCacheServer
+from SimCacheServer import SimCacheServer
 
 def compute_acc(pred, labels):
     """
@@ -42,7 +43,7 @@ def load_subtensor(nfeat, labels, seeds, input_nodes, device):
     """
     start_time = time.time()
     batch_inputs = nfeat[input_nodes].to(device)
-    print('fetch features from CPU with time cost:{:.4f}'.format(time.time()-start_time))
+    # print('fetch features from CPU with time cost:{:.4f}'.format(time.time()-start_time))
     batch_labels = labels[seeds].to(device)
     return batch_inputs, batch_labels
 
@@ -58,10 +59,15 @@ def run(args, device, data):
     val_nid = val_g.ndata.pop('val_mask').nonzero().squeeze()
 
     #init the cache server
-    if args.cache_method != 'none':
-        Cache_server = GraphCacheServer(train_g, train_g.number_of_nodes(), device, capacity = 20000)
+    if args.cache_method == 'degree':
+        Cache_server = DegCacheServer(train_g, train_g.number_of_nodes(), device, capacity = 20000)
         Cache_server.cache_init(['features'])
     # print(Cache_server.gpu_cache)
+
+    elif args.cache_method == 'L2-similarity':
+        Cache_server = SimCacheServer(train_g, train_g.number_of_nodes(), device, capacity = 20000)
+        Cache_server.cache_init(['features'])
+        print(Cache_server.cache_content)
 
     if args.graph_device == 'gpu':
         train_nid = train_nid.to(device)

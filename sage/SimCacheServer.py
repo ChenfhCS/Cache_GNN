@@ -6,10 +6,11 @@ import numba
 import torch
 import time
 from dgl import DGLGraph
+from utils import *
 # from dgl.frame import Frame, FrameRef
 import dgl.utils
 
-class GraphCacheServer:
+class SimCacheServer:
     def __init__(self, graph, node_num, device, capacity):
         self.graph = graph  # dgl graph
         self.device = device  # device
@@ -40,8 +41,8 @@ class GraphCacheServer:
                     - 1024 * 1024 * 1024 # in bytes
         
         # Stpe2: get capability
+        # at first, we set the capability manually
         # self.capability = int(available / (self.total_dim * 4)) 
-        # self.capability = s # at first, we set the capability manually
 
         # Step3: cache features
         if self.capability >= self.node_num:
@@ -58,8 +59,9 @@ class GraphCacheServer:
             out_degrees = self.graph.out_degrees()  # get nodes degrees
             sort_nid = torch.argsort(out_degrees, descending=True)  # sort nodes with degree decreasing
             cache_nid = sort_nid[:self.capability]  # choose first capability nodes with the most degrees
-            embed_dict = self.get_features(cache_nid, embed_names) # obtain the features of the chosen nodes
-            self.cache_data(cache_nid, embed_dict, is_full=False)  # cache features
+            cache_features = self.get_features(cache_nid, embed_names) # obtain the features of the chosen nodes
+            approx_features = Approx_prefix(cache_features, parameter=int(self.dims/2))  # get approximation-key
+            self.cache_data(approx_features, cache_features, is_full=False)  # cache features
     
 
     def get_features(self, nids, embed_names, to_gpu=False):
@@ -74,23 +76,39 @@ class GraphCacheServer:
             embed_dict = {name: self.graph.ndata[name][nids] for name in embed_names}
         return embed_dict
 
-    def cache_data(self, nids, data, is_full=False):
-        num = nids.size(0)  # number of chosen nodes
+    def cache_data(self, approx_features, data, is_full=False):
         '''
-        id map from local idx to cache idx.
-        For example, cache_id = [0,3,2,5,1], total 6 nodes,
-        IdMap_local_cache = ['0', '4', '2', '1', 0, '3'];
-        IdMap_local_cache[local_id] = cache_id.
+        {key: approximation results; value: original features}
         '''
-        self.IdMap_local_cache[nids] = torch.arange(num).cuda(self.device)
-        self.cached_num = num
+        # step1: delete the reduntant approximation results
+        approx_features, inverse_idx, counts = torch.unique(approx_features, sorted=False, return_inverse=True, return_counts=True, dim=0)
+
+        # step2: register a new tensor for the cached features
+        cache_content = []
+
+        # step3: fill the cache_content
+        start = 0
+        for i in range (approx_features.size(0)):
+            idx = inverse_idx[start:counts[i].data]
+            cache_content.append(data[idx])
+            start += counts[i].data
 
         for name in data:
-            self.cache_content[name] = data[name].cuda(self.device)
+            self.cache_content[name] = torch.FloatTensor(cache_content)
+        # for i in range (approx_features.size(0)):
+        #     self.cache_content.update({:})
+        #     self.cache_content = {key: }
+
+
+        # self.IdMap_local_cache[nids] = torch.arange(num).cuda(self.device)
+        # self.cached_num = num
+
+        # for name in data:
+        #     self.cache_content[name] = data[name].cuda(self.device)
         
-        # setup flags
-        self.gpu_flag[nids] = True
-        self.full_cached = is_full
+        # # setup flags
+        # self.gpu_flag[nids] = True
+        # self.full_cached = is_full
 
     def fetch_data(self, input_nodes):
         '''
@@ -121,12 +139,14 @@ class GraphCacheServer:
         cache_id = self.IdMap_local_cache[nids_in_gpu]  # cache idx
         for name in self.cache_content:
             batch_data[gpu_mask] = self.cache_content[name][cache_id]
-        print('fetch features from GPU directly with time cost:{:.4f}'.format(time.time()-start_time))
+        # print('fetch features from GPU directly with time cost:{:.4f}'.format(time.time()-start_time))
         #obtain features from CPU
         start_time = time.time()
         cpu_content = self.get_features(nids_in_cpu, ['features'], to_gpu=True)
         for name in self.cache_content:
             batch_data[cpu_mask] = cpu_content[name]
         # print('input_data',batch_data)
-        print('fetch features from CPU with time cost:{:.4f}'.format(time.time()-start_time))
+        # print('fetch features from CPU with time cost:{:.4f}'.format(time.time()-start_time))
         return batch_data
+    
+    
