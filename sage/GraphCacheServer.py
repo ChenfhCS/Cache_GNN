@@ -92,5 +92,15 @@ class GraphCacheServer:
         self.gpu_flag[nids] = True
         self.full_cached = is_full
 
-    def fetch_data(self):
-        return 
+    # def fetch_data(self):
+    #     '''
+    #     if full cached, all data are fetched from cache (GPU),
+    #     else, data are fetched from CPU and GPU
+    #     '''
+    #     if self.full_cached:
+
+        
+    # def fetch_data_GPU(self):
+
+
+    # def fetch_data_GPU_CPU(self):
