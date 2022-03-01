@@ -4,6 +4,7 @@ import sys
 import numpy as np
 import numba
 import torch
+import time
 from dgl import DGLGraph
 # from dgl.frame import Frame, FrameRef
 import dgl.utils
@@ -116,13 +117,16 @@ class GraphCacheServer:
         batch_data = torch.cuda.FloatTensor(input_nodes.size(0), self.dims)
 
         # obtain features from GPU
+        start_time = time.time()
         cache_id = self.IdMap_local_cache[nids_in_gpu]  # cache idx
         for name in self.cache_content:
             batch_data[gpu_mask] = self.cache_content[name][cache_id]
-        
+        print('fetch features from GPU directly with time cost:{:.4f}'.format(time.time()-start_time))
         #obtain features from CPU
+        start_time = time.time()
         cpu_content = self.get_features(nids_in_cpu, ['features'], to_gpu=True)
         for name in self.cache_content:
             batch_data[cpu_mask] = cpu_content[name]
         # print('input_data',batch_data)
+        print('fetch features from CPU with time cost:{:.4f}'.format(time.time()-start_time))
         return batch_data
