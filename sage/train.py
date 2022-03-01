@@ -56,7 +56,7 @@ def run(args, device, data):
 
     #init the cache server
     Cache_server = GraphCacheServer(train_g, train_g.number_of_nodes(), device)
-    Cache_server.cache_init(['features'])
+    Cache_server.cache_init(['feat'])
     # print(Cache_server.gpu_cache)
 
     if args.graph_device == 'gpu':
