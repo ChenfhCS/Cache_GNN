@@ -82,10 +82,9 @@ class GCNLayer(nn.Module):
         # modified graph convolutional operations
 
 
-        if self.cache == False:
-            # step1: aggregation
-            h = torch.mm(self.adj, h)
-            cache_h = h
+        # if self.cache == False:
+        #     # step1: aggregation
+        #     h = torch.mm(self.adj, h)
 
         # step2: dropout
         if self.dropout:
@@ -135,6 +134,7 @@ class GCN(nn.Module):
                     h = layer(self.cache)
                 else:
                     h = layer(h)
+                print(h.data.numpy())
             else:
                 h = layer(h)
         return h

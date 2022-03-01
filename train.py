@@ -12,6 +12,8 @@ from gcn import GCN
 #from gcn_mp import GCN
 #from gcn_spmv import GCN
 
+np.set_printoptions(threshold=np.inf)
+
 
 def evaluate(model, features, labels, mask):
     model.eval()
@@ -51,6 +53,7 @@ def main(args):
     in_feats = features.shape[1]
     n_classes = data.num_labels
     n_edges = data.graph.number_of_edges()
+    # print(features[0].numpy())
     print("""----Data statistics------'
       #Edges %d
       #Classes %d

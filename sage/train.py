@@ -11,6 +11,7 @@ import tqdm
 
 from model import SAGE
 from load_data import load_reddit, inductive_split, load_ogb
+from GraphCacheServer import GraphCacheServer
 
 def compute_acc(pred, labels):
     """
@@ -52,6 +53,11 @@ def run(args, device, data):
         ~(test_g.ndata['train_mask'] | test_g.ndata['val_mask'])).nonzero().squeeze()
     train_nid = train_g.ndata.pop('train_mask').nonzero().squeeze()
     val_nid = val_g.ndata.pop('val_mask').nonzero().squeeze()
+
+    # init the cache server
+    Cache_server = GraphCacheServer(train_g, train_g.number_of_nodes(), device)
+    Cache_server.cache_init(['features'])
+    print(Cache_server.gpu_cache)
 
     if args.graph_device == 'gpu':
         train_nid = train_nid.to(device)
@@ -161,9 +167,9 @@ if __name__ == '__main__':
     else:
         device = th.device('cpu')
         assert args.graph_device == 'cpu', \
-               f"Must have GPUs to enable {args.graph_device} sampling."
+               "Must have GPUs to enable {} sampling.".format(args.graph_device)
         assert args.data_device == 'cpu', \
-               f"Must have GPUs to enable {args.data_device} feature storage."
+               "Must have GPUs to enable {} feature storage.".format(args.data_device)
 
     if args.dataset == 'reddit':
         g, n_classes = load_reddit()
