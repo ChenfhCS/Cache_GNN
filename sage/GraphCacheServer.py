@@ -14,6 +14,9 @@ class GraphCacheServer:
         self.device = device  # device
         self.node_num = node_num  # number of nodes in the graph
 
+        self.graph.ndata['features'] = self.graph.ndata.pop('feat')
+        self.graph.ndata['labels'] = self.graph.ndata.pop('label')
+
         # masks for manage the feature locations: default in CPU
         self.gpu_flag = torch.zeros(self.node_num).bool().cuda(self.device)
         self.gpu_flag.requires_grad_(False)
