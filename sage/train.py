@@ -188,7 +188,7 @@ if __name__ == '__main__':
         test_labels = test_g.ndata.pop('labels')
     else:
         train_g = val_g = test_g = g
-        train_nfeat = val_nfeat = test_nfeat = g.ndata.pop('features')
+        train_nfeat = val_nfeat = test_nfeat = g.ndata('features')
         train_labels = val_labels = test_labels = g.ndata.pop('labels')
 
     if args.data_device == 'gpu':
