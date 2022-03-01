@@ -15,7 +15,7 @@ class GraphCacheServer:
         self.node_num = node_num  # number of nodes in the graph
 
         # masks for manage the feature locations: default in CPU
-        self.gpu_flag = torch.zeros(self.node_num).bool().cuda(self.gpuid)
+        self.gpu_flag = torch.zeros(self.node_num).bool().cuda(self.device)
         self.gpu_flag.requires_grad_(False)
 
         self.full_cached = False
@@ -30,9 +30,9 @@ class GraphCacheServer:
 
     def cache_init(self, embed_names):
         # Step1: get available GPU memory
-        peak_allocated_mem = torch.cuda.max_memory_allocated(device=self.gpuid)
-        peak_cached_mem = torch.cuda.max_memory_cached(device=self.gpuid)
-        total_mem = torch.cuda.get_device_properties(self.gpuid).total_memory
+        peak_allocated_mem = torch.cuda.max_memory_allocated(device=self.device)
+        peak_cached_mem = torch.cuda.max_memory_cached(device=self.device)
+        total_mem = torch.cuda.get_device_properties(self.device).total_memory
         available = total_mem - peak_allocated_mem - peak_cached_mem \
                     - 1024 * 1024 * 1024 # in bytes
         
@@ -44,7 +44,7 @@ class GraphCacheServer:
         if self.capability >= self.node_num:
             # fully cache
             print('cache the full graph...')
-            full_nids = torch.arange(self.node_num).cuda(self.gpuid)
+            full_nids = torch.arange(self.node_num).cuda(self.device)
             data_frame = self.get_features(full_nids, embed_names)
             self.cache_data(full_nids, data_frame, is_full=True)
         
