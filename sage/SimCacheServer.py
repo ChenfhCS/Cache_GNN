@@ -80,6 +80,7 @@ class SimCacheServer:
         '''
         {key: approximation results; value: original features}
         '''
+        data['features'].cuda(self.device)
         for i in range(approx_features.size(0)):
             self.cache_content.update({approx_features[i]: data['features'][i].cuda(self.device)})
 
