@@ -39,8 +39,8 @@ def load_subtensor(nfeat, labels, seeds, input_nodes, device):
     """
     Extracts features and labels for a subset of nodes
     """
-    print(input_nodes)
     batch_inputs = nfeat[input_nodes].to(device)
+    print(batch_inputs)
     batch_labels = labels[seeds].to(device)
     return batch_inputs, batch_labels
 
@@ -102,12 +102,12 @@ def run(args, device, data):
         tic_step = time.time()
         for step, (input_nodes, seeds, blocks) in enumerate(dataloader):
             # Load the input features as well as output labels
-            # batch_inputs, batch_labels = load_subtensor(train_nfeat, train_labels,
-            #                                             seeds, input_nodes, device)
+            batch_inputs, batch_labels = load_subtensor(train_nfeat, train_labels,
+                                                        seeds, input_nodes, device)
 
-            # load data to GPU with cache
-            batch_inputs = Cache_server.fetch_data(input_nodes)
-            batch_labels = train_labels[seeds].to(device)
+            # # load data to GPU with cache
+            # batch_inputs = Cache_server.fetch_data(input_nodes)
+            # batch_labels = train_labels[seeds].to(device)
             
             blocks = [block.int().to(device) for block in blocks]
 
