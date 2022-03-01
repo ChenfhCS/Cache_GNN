@@ -81,9 +81,9 @@ class SimCacheServer:
         {key: approximation results; value: original features}
         '''
         for i in range(approx_features.size(0)):
-            self.cache_content.update({approx_features[i]: data['features'][i]})
+            self.cache_content.update({approx_features[i]: data['features'][i].cuda(self.device)})
 
-        self.cache_content.cuda(self.device)
+        # self.cache_content.cuda(self.device)
 
         # # step1: delete the reduntant approximation results
         # approx_features, inverse_idx, counts = torch.unique(approx_features, sorted=False, return_inverse=True, return_counts=True, dim=0)
