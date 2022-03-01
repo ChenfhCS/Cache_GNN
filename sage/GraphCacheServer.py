@@ -50,7 +50,7 @@ class GraphCacheServer:
         
         else:
             # choose top-capability out-degree nodes to cache
-            print('cache the part of graph... caching percentage: {:.4f}'
+            print('cache the part of graph. Caching percentage: {:.4f}'
                     .format(self.capability / self.node_num))
             out_degrees = self.graph.out_degrees()  # get nodes degrees
             sort_nid = torch.argsort(out_degrees, descending=True)  # sort nodes with degree decreasing
@@ -65,10 +65,10 @@ class GraphCacheServer:
         nids: index of choen nodes for cache
         '''
         if to_gpu:
-            embed_dict = {name: self.graph.nodes[nids].data[name].cuda(self.device, non_blocking=True)\
+            embed_dict = {name: self.graph.ndata[name][nids].cuda(self.device, non_blocking=True)\
                 for name in embed_names}
         else:
-            embed_dict = {name: self.graph.nodes[nids].data[name] for name in embed_names}
+            embed_dict = {name: self.graph.ndata[name][nids] for name in embed_names}
         return embed_dict
 
     def cache_data(self, nids, data, is_full=False):
