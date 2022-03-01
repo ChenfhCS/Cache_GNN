@@ -181,8 +181,8 @@ if __name__ == '__main__':
         device = th.device('cpu')
         assert args.graph_device == 'cpu', \
                "Must have GPUs to enable {} sampling.".format(args.graph_device)
-        assert args.data_device == 'cpu', \
-               "Must have GPUs to enable {} feature storage.".format(args.data_device)
+        # assert args.data_device == 'cpu', \
+        #        "Must have GPUs to enable {} feature storage.".format(args.data_device)
 
     if args.dataset == 'reddit':
         g, n_classes = load_reddit()
