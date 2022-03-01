@@ -59,7 +59,7 @@ def run(args, device, data):
 
     #init the cache server
     if args.cache_method != 'none':
-        Cache_server = GraphCacheServer(train_g, train_g.number_of_nodes(), device, capacity = 5000)
+        Cache_server = GraphCacheServer(train_g, train_g.number_of_nodes(), device, capacity = 20000)
         Cache_server.cache_init(['features'])
     # print(Cache_server.gpu_cache)
 
