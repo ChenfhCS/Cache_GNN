@@ -112,6 +112,7 @@ class GraphCacheServer:
         cpu_mask = ~gpu_mask
         nids_in_cpu = input_nodes[cpu_mask]
 
+        print(self.dims)
         batch_data = torch.cuda.FloatTensor(input_nodes.size(0), self.dims)
 
         # obtain features from GPU
