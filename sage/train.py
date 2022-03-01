@@ -166,7 +166,7 @@ if __name__ == '__main__':
     argparser.add_argument('--graph-device', choices=('cpu', 'gpu', 'uva'), default='cpu',
                            help="Device to perform the sampling. "
                                 "Must have 0 workers for 'gpu' and 'uva'")
-    argparser.add_argument('--data-device', choices=('cpu', 'gpu', 'uva'), default='gpu',
+    argparser.add_argument('--data-device', choices=('cpu', 'gpu', 'uva'), default='cpu',
                            help="By default the script puts all node features and labels "
                                 "on GPU when using it to save time for data copy. This may "
                                 "be undesired if they cannot fit in GPU memory at once. "
