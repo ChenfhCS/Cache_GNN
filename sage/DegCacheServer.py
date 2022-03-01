@@ -109,7 +109,7 @@ class DegCacheServer:
 
     def fetch_data_GPU_CPU(self, input_nodes):
         # index of nodes in GPU and CPU
-        gpu_mask = self.gpu_flag[input_nodes]
+        gpu_mask = self.gpu_flag[input_nodes]  # for example, [True, False, True,..., False]
         nids_in_gpu = input_nodes[gpu_mask]  # still local index
         cpu_mask = ~gpu_mask
         nids_in_cpu = input_nodes[cpu_mask]

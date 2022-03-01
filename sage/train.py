@@ -115,7 +115,7 @@ def run(args, device, data):
             if args.cache_method == 'none':
                 batch_inputs, batch_labels = load_subtensor(train_nfeat, train_labels,
                                                         seeds, input_nodes, device)
-            elif args.cache_method == 'degree':
+            else:
                 # load data to GPU with cache
                 batch_inputs = Cache_server.fetch_data(input_nodes)
                 batch_labels = train_labels[seeds].to(device)

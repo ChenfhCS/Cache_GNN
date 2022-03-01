@@ -84,39 +84,7 @@ class SimCacheServer:
         for i in range(approx_features.size(0)):
             self.cache_content.update({approx_features[i]: data['features'][i].cuda(self.device)})
 
-        # self.cache_content.cuda(self.device)
-
-        # # step1: delete the reduntant approximation results
-        # approx_features, inverse_idx, counts = torch.unique(approx_features, sorted=False, return_inverse=True, return_counts=True, dim=0)
-
-        # # step2: register a new tensor for the cached features
-        # cache_content = []
-
-        # # step3: fill the cache_content
-        # start = 0
-        # for i in range (approx_features.size(0)):
-        #     idx = inverse_idx[start:counts[i].data]
-        #     cache_content.append(data['features'][idx])
-        #     start += counts[i].data
-
-        # for name in data:
-        #     self.cache_content[name] = torch.FloatTensor(cache_content)
-
-
-        # for i in range (approx_features.size(0)):
-        #     self.cache_content.update({:})
-        #     self.cache_content = {key: }
-
-
-        # self.IdMap_local_cache[nids] = torch.arange(num).cuda(self.device)
-        # self.cached_num = num
-
-        # for name in data:
-        #     self.cache_content[name] = data[name].cuda(self.device)
-        
-        # # setup flags
-        # self.gpu_flag[nids] = True
-        # self.full_cached = is_full
+        self.full_cached = is_full
 
     def fetch_data(self, input_nodes):
         '''
@@ -134,27 +102,37 @@ class SimCacheServer:
         return batch_data
 
     def fetch_data_GPU_CPU(self, input_nodes):
-        # index of nodes in GPU and CPU
-        gpu_mask = self.gpu_flag[input_nodes]
-        nids_in_gpu = input_nodes[gpu_mask]  # still local index
-        cpu_mask = ~gpu_mask
-        nids_in_cpu = input_nodes[cpu_mask]
-
+        cache_features = self.get_features(input_nodes, ['features'])
+        approx_feat = Approx_prefix(cache_features, 0.01)
+        
         batch_data = torch.cuda.FloatTensor(input_nodes.size(0), self.dims)
+        for i in range (input_nodes.size(0)):
+            if self.cache_content.has_key(approx_feat[i]):
+               batch_data[i] = self.cache_content.get(approx_feat[i])
+            else:
+               batch_data[i] = cache_features['features'][input_nodes[i]]
 
-        # obtain features from GPU
-        start_time = time.time()
-        cache_id = self.IdMap_local_cache[nids_in_gpu]  # cache idx
-        for name in self.cache_content:
-            batch_data[gpu_mask] = self.cache_content[name][cache_id]
-        # print('fetch features from GPU directly with time cost:{:.4f}'.format(time.time()-start_time))
-        #obtain features from CPU
-        start_time = time.time()
-        cpu_content = self.get_features(nids_in_cpu, ['features'], to_gpu=True)
-        for name in self.cache_content:
-            batch_data[cpu_mask] = cpu_content[name]
-        # print('input_data',batch_data)
-        # print('fetch features from CPU with time cost:{:.4f}'.format(time.time()-start_time))
+        # # index of nodes in GPU and CPU
+        # gpu_mask = self.gpu_flag[input_nodes]
+        # nids_in_gpu = input_nodes[gpu_mask]  # still local index
+        # cpu_mask = ~gpu_mask
+        # nids_in_cpu = input_nodes[cpu_mask]
+
+        # batch_data = torch.cuda.FloatTensor(input_nodes.size(0), self.dims)
+
+        # # obtain features from GPU
+        # start_time = time.time()
+        # cache_id = self.IdMap_local_cache[nids_in_gpu]  # cache idx
+        # for name in self.cache_content:
+        #     batch_data[gpu_mask] = self.cache_content[name][cache_id]
+        # # print('fetch features from GPU directly with time cost:{:.4f}'.format(time.time()-start_time))
+        # #obtain features from CPU
+        # start_time = time.time()
+        # cpu_content = self.get_features(nids_in_cpu, ['features'], to_gpu=True)
+        # for name in self.cache_content:
+        #     batch_data[cpu_mask] = cpu_content[name]
+        # # print('input_data',batch_data)
+        # # print('fetch features from CPU with time cost:{:.4f}'.format(time.time()-start_time))
         return batch_data
     
     
