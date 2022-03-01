@@ -90,7 +90,7 @@ class SimCacheServer:
         start = 0
         for i in range (approx_features.size(0)):
             idx = inverse_idx[start:counts[i].data]
-            cache_content.append(data[idx])
+            cache_content.append(data['features'][idx])
             start += counts[i].data
 
         for name in data:
