@@ -14,7 +14,7 @@ class GraphCacheServer:
         self.device = device  # device
         self.node_num = node_num  # number of nodes in the graph
 
-        print(self.graph.number_of_nodes())
+        print(self.graph.ndata['feat'])
 
         # self.graph.ndata['features'] = self.graph.ndata.pop('feat')
         # self.graph.ndata['labels'] = self.graph.ndata.pop('label')
