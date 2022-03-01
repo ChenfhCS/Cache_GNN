@@ -123,5 +123,5 @@ class GraphCacheServer:
         cpu_content = self.get_features(nids_in_cpu, ['features'], to_gpu=True)
         for name in self.cache_content:
             batch_data[cpu_mask] = cpu_content[name]
-        print(batch_data)
+        print('input_data',batch_data)
         return batch_data
