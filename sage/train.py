@@ -102,12 +102,13 @@ def run(args, device, data):
         tic_step = time.time()
         for step, (input_nodes, seeds, blocks) in enumerate(dataloader):
             # Load the input features as well as output labels
-            batch_inputs, batch_labels = load_subtensor(train_nfeat, train_labels,
-                                                        seeds, input_nodes, device)
+            # batch_inputs, batch_labels = load_subtensor(train_nfeat, train_labels,
+            #                                             seeds, input_nodes, device)
 
-            # # load data to GPU with cache
-            # batch_inputs = Cache_server.fetch_data(input_nodes)
-            # batch_labels = train_labels[seeds].to(device)
+            # load data to GPU with cache
+            batch_inputs = Cache_server.fetch_data(input_nodes)
+            print(batch_inputs)
+            batch_labels = train_labels[seeds].to(device)
             
             blocks = [block.int().to(device) for block in blocks]
 
