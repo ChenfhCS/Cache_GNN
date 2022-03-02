@@ -111,6 +111,7 @@ class SimCacheServer:
     def fetch_data_GPU_CPU(self, input_nodes):
         batch_data = torch.cuda.FloatTensor(input_nodes.size(0), self.dims)
         input_features = self.get_features(input_nodes, ['features'])
+        print(input_features['features'][0])
         approx_feat = Approx_prefix(input_features['features'], 0.01)
         approx_list = [approx_feat[i] for i in range (input_features['features'].size(0))]
         gpu_mask = torch.zeros(input_features['features'].size(0)).bool().cuda(self.device)
