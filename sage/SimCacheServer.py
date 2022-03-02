@@ -62,7 +62,7 @@ class SimCacheServer:
             sort_nid = torch.argsort(out_degrees, descending=True)  # sort nodes with degree decreasing
             cache_nid = sort_nid[:self.capability]  # choose first capability nodes with the most degrees
             cache_features = self.get_features(cache_nid, embed_names) # obtain the features of the chosen nodes
-            approx_features = Approx_prefix(cache_features['features'], parameter=1)  # get approximation-key
+            approx_features = Approx_prefix(cache_features['features'], parameter=0.01)  # get approximation-key
             self.cache_data(approx_features, cache_features, is_full=False)  # cache features
     
 
@@ -109,24 +109,26 @@ class SimCacheServer:
         return batch_data
 
     def fetch_data_GPU_CPU(self, input_nodes):
+        batch_data = torch.cuda.FloatTensor(input_nodes.size(0), self.dims)
         input_features = self.get_features(input_nodes, ['features'])
-        approx_feat = Approx_prefix(input_features['features'], 1)
+        approx_feat = Approx_prefix(input_features['features'], 0.01)
         approx_list = [approx_feat[i] for i in range (input_features['features'].size(0))]
         gpu_mask = torch.zeros(input_features['features'].size(0)).bool().cuda(self.device)
         for i in range (input_features['features'].size(0)):
             if approx_feat[i] in self.approx_map:
                 gpu_mask[i] = True
             else: gpu_mask[i] = False
-        print('gpu_mask: ',gpu_mask)
+        # print('gpu_mask: ',gpu_mask)
         key_in_cache = approx_feat[gpu_mask]
-        print('key_in_cache: ',key_in_cache)
-        nids_in_gpu = itemgetter(*key_in_cache)(self.approx_map)
+        # print('key_in_cache: ',key_in_cache)
+
+        if key_in_cache.size(0) > 1:
+            nids_in_gpu = itemgetter(*key_in_cache)(self.approx_map)
+            # obtain features from GPU
+            batch_data[gpu_mask] = self.cache_content[nids_in_gpu]
+
         cpu_mask = ~gpu_mask
         nids_in_cpu = input_nodes[cpu_mask]
-
-        batch_data = torch.cuda.FloatTensor(input_nodes.size(0), self.dims)
-        # obtain features from GPU
-        batch_data[gpu_mask] = self.cache_content[nids_in_gpu]
         # obtain features from CPU
         cpu_content = self.get_features(nids_in_cpu, ['features'], to_gpu=True)
         for name in cpu_content:
