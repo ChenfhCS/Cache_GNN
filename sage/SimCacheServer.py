@@ -62,7 +62,7 @@ class SimCacheServer:
             sort_nid = torch.argsort(out_degrees, descending=True)  # sort nodes with degree decreasing
             cache_nid = sort_nid[:self.capability]  # choose first capability nodes with the most degrees
             cache_features = self.get_features(cache_nid, embed_names) # obtain the features of the chosen nodes
-            approx_features = Approx_prefix(cache_features['features'], parameter=0.01)  # get approximation-key
+            approx_features = Approx_prefix(cache_features['features'], parameter=1)  # get approximation-key
             self.cache_data(approx_features, cache_features, is_full=False)  # cache features
     
 
@@ -85,7 +85,7 @@ class SimCacheServer:
         self.cache_content = data['features'].cuda(self.device)
         approx_feat, inverse_idx, counts = torch.unique(approx_features, sorted=False, return_inverse=True, return_counts=True)
         start_idx = 0
-        self.approx_map = {approx_feat[i]: start_idx+i*counts[i] for i in range (approx_features.size(0))}
+        self.approx_map = {approx_feat[i]: start_idx+i*counts[i] for i in range (approx_feat.size(0))}
 
         # data['features'].cuda(self.device)
         # for i in range(approx_features.size(0)):
@@ -110,7 +110,7 @@ class SimCacheServer:
 
     def fetch_data_GPU_CPU(self, input_nodes):
         input_features = self.get_features(input_nodes, ['features'])
-        approx_feat = Approx_prefix(input_features['features'], 0.01)
+        approx_feat = Approx_prefix(input_features['features'], 1)
         approx_list = [approx_feat[i] for i in range (input_features['features'].size(0))]
         gpu_mask = torch.zeros(input_features['features'].size(0)).bool().cuda(self.device)
         for i in range (input_features['features'].size(0)):
