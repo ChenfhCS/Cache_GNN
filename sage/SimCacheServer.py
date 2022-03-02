@@ -62,7 +62,7 @@ class SimCacheServer:
             sort_nid = torch.argsort(out_degrees, descending=True)  # sort nodes with degree decreasing
             cache_nid = sort_nid[:self.capability]  # choose first capability nodes with the most degrees
             cache_features = self.get_features(cache_nid, embed_names) # obtain the features of the chosen nodes
-            approx_features = Approx_prefix(cache_features, parameter=0.01)  # get approximation-key
+            approx_features = Approx_prefix(cache_features['features'], parameter=0.01)  # get approximation-key
             self.cache_data(approx_features, cache_features, is_full=False)  # cache features
     
 
