@@ -65,7 +65,7 @@ def run(args, device, data):
     # print(Cache_server.gpu_cache)
 
     elif args.cache_method == 'L2-similarity':
-        Cache_server = SimCacheServer(train_g, train_g.number_of_nodes(), device, capacity = 300)
+        Cache_server = SimCacheServer(train_g, train_g.number_of_nodes(), device, capacity = 10000)
         Cache_server.cache_init(['features'])
         print(len(Cache_server.cache_content))
 
