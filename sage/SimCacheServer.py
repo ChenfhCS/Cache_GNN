@@ -78,11 +78,16 @@ class SimCacheServer:
 
     def cache_data(self, approx_features, data, is_full=False):
         '''
-        {key: approximation results; value: original features}
+        {key: approximation results; value: idx of cached features}
         '''
-        data['features'].cuda(self.device)
-        for i in range(approx_features.size(0)):
-            self.cache_content.update({approx_features[i]: data['features'][i].cuda(self.device)})
+        cache_feat = data['features'].cuda(self.device)
+        approx_feat, inverse_idx, counts = torch.unique(approx_features, sorter=False, return_inverse=True, return_counts=True)
+        start_idx = 0
+        self.cache_content = {approx_feat[i]: cache_feat[start_idx+i*counts[i]] for i in range (approx_features.size(0))}
+
+        # data['features'].cuda(self.device)
+        # for i in range(approx_features.size(0)):
+        #     self.cache_content.update({approx_features[i]: data['features'][i].cuda(self.device)})
 
         self.full_cached = is_full
 
