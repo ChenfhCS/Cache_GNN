@@ -118,9 +118,9 @@ class SimCacheServer:
                 gpu_mask[i] = True
             else: gpu_mask[i] = False
         print('gpu_mask: ',gpu_mask)
-        key_in_cache = set(approx_list).intersection(self.approx_map)
+        key_in_cache = approx_feat[gpu_mask]
         print('key_in_cache: ',key_in_cache)
-        nids_in_gpu = itemgetter(*list(key_in_cache))(self.approx_map)
+        nids_in_gpu = itemgetter(*key_in_cache)(self.approx_map)
         cpu_mask = ~gpu_mask
         nids_in_cpu = input_nodes[cpu_mask]
 
