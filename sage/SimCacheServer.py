@@ -112,7 +112,7 @@ class SimCacheServer:
         input_features = self.get_features(input_nodes, ['features'])
         approx_feat = Approx_prefix(input_features['features'], 0.01)
         approx_list = [approx_feat[i] for i in range (input_features['features'].size(0))]
-        gpu_mask = approx_feat in self.approx_map
+        gpu_mask = approx_list in self.approx_map
         print('gpu_mask: ',gpu_mask)
         key_in_cache = set(approx_list).intersection(self.approx_map)
         print('key_in_cache: ',key_in_cache)
