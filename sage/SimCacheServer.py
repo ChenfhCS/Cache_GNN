@@ -114,6 +114,7 @@ class SimCacheServer:
         approx_feat = Approx_prefix(input_features['features'], 0.01)
         approx_list = [approx_feat[i] for i in range (input_features['features'].size(0))]
         gpu_mask = torch.zeros(input_features['features'].size(0)).bool().cuda(self.device)
+        start_time = time.time()
         for i in range (input_features['features'].size(0)):
             if approx_feat[i] in self.approx_map:
                 gpu_mask[i] = True
@@ -121,18 +122,23 @@ class SimCacheServer:
         # print('gpu_mask: ',gpu_mask)
         key_in_cache = approx_feat[gpu_mask]
         # print('key_in_cache: ',key_in_cache)
+        print('get gpu mask and cache_id:{:.4f}'.format(time.time()-start_time))
 
+        start_time = time.time()
         if key_in_cache.size(0) > 1:
             nids_in_gpu = itemgetter(*key_in_cache)(self.approx_map)
             # obtain features from GPU
             batch_data[gpu_mask] = self.cache_content[nids_in_gpu]
+            print('fetch features from GPU directly with time cost:{:.4f}'.format(time.time()-start_time))
 
+        start_time = time.time()
         cpu_mask = ~gpu_mask
         nids_in_cpu = input_nodes[cpu_mask]
         # obtain features from CPU
         cpu_content = self.get_features(nids_in_cpu, ['features'], to_gpu=True)
         for name in cpu_content:
             batch_data[cpu_mask] = cpu_content[name]
+        print('fetch features from CPU with time cost:{:.4f}'.format(time.time()-start_time))
 
         # cache_features = self.get_features(input_nodes, ['features'])
         # approx_feat = Approx_prefix(cache_features, 0.01)
