@@ -113,6 +113,7 @@ class SimCacheServer:
         approx_feat = Approx_prefix(input_features, 0.01)
         gpu_mask = approx_feat in self.approx_map
         key_in_cache = set(input_features).intersection(self.approx_map)
+        print(key_in_cache)
         nids_in_gpu = itemgetter(*key_in_cache)(self.approx_map)
         cpu_mask = ~gpu_mask
         nids_in_cpu = input_nodes[cpu_mask]
