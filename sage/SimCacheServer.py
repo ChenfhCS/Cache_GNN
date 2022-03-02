@@ -7,6 +7,7 @@ import torch
 import time
 from dgl import DGLGraph
 from utils import *
+from operator import itemgetter
 # from dgl.frame import Frame, FrameRef
 import dgl.utils
 
@@ -24,7 +25,8 @@ class SimCacheServer:
         self.gpu_flag.requires_grad_(False)
 
         self.full_cached = False
-        self.cache_content = dict()
+        self.approx_map = dict()
+        self.cache_content = torch.cuda.FloatTensor(self.capability)
 
         # id map from local id to cache id
         with torch.cuda.device(self.device):
@@ -80,10 +82,10 @@ class SimCacheServer:
         '''
         {key: approximation results; value: idx of cached features}
         '''
-        cache_feat = data['features'].cuda(self.device)
+        self.cache_content = data['features'].cuda(self.device)
         approx_feat, inverse_idx, counts = torch.unique(approx_features, sorted=False, return_inverse=True, return_counts=True)
         start_idx = 0
-        self.cache_content = {approx_feat[i]: cache_feat[start_idx+i*counts[i]] for i in range (approx_features.size(0))}
+        self.approx_map = {approx_feat[i]: start_idx+i*counts[i] for i in range (approx_features.size(0))}
 
         # data['features'].cuda(self.device)
         # for i in range(approx_features.size(0)):
@@ -107,15 +109,31 @@ class SimCacheServer:
         return batch_data
 
     def fetch_data_GPU_CPU(self, input_nodes):
-        cache_features = self.get_features(input_nodes, ['features'])
-        approx_feat = Approx_prefix(cache_features, 0.01)
-        
+        input_features = self.get_features(input_nodes, ['features'])
+        approx_feat = Approx_prefix(input_features, 0.01)
+        gpu_mask = approx_feat in self.approx_map
+        key_in_cache = set(input_features).intersection(self.approx_map)
+        nids_in_gpu = itemgetter(*key_in_cache)(self.approx_map)
+        cpu_mask = ~gpu_mask
+        nids_in_cpu = input_nodes[cpu_mask]
+
         batch_data = torch.cuda.FloatTensor(input_nodes.size(0), self.dims)
-        for i in range (input_nodes.size(0)):
-            if approx_feat[i] in self.cache_content:
-               batch_data[i] = self.cache_content.get(approx_feat[i])
-            else:
-               batch_data[i] = cache_features['features'][i]
+        # obtain features from GPU
+        batch_data[gpu_mask] = self.cache_content[nids_in_gpu]
+        # obtain features from CPU
+        cpu_content = self.get_features(nids_in_cpu, ['features'], to_gpu=True)
+        for name in cpu_content:
+            batch_data[cpu_mask] = cpu_content[name]
+
+        # cache_features = self.get_features(input_nodes, ['features'])
+        # approx_feat = Approx_prefix(cache_features, 0.01)
+        
+        # batch_data = torch.cuda.FloatTensor(input_nodes.size(0), self.dims)
+        # for i in range (input_nodes.size(0)):
+        #     if approx_feat[i] in self.cache_content:
+        #        batch_data[i] = self.cache_content.get(approx_feat[i])
+        #     else:
+        #        batch_data[i] = cache_features['features'][i]
 
         # # index of nodes in GPU and CPU
         # gpu_mask = self.gpu_flag[input_nodes]
