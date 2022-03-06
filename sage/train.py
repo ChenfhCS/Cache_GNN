@@ -10,6 +10,7 @@ import time
 import argparse
 import tqdm
 
+from utils import clustering
 from model import SAGE
 from load_data import load_reddit, inductive_split, load_ogb
 from DegCacheServer import DegCacheServer
@@ -57,6 +58,10 @@ def run(args, device, data):
         ~(test_g.ndata['train_mask'] | test_g.ndata['val_mask'])).nonzero().squeeze()
     train_nid = train_g.ndata.pop('train_mask').nonzero().squeeze()
     val_nid = val_g.ndata.pop('val_mask').nonzero().squeeze()
+
+    # clustering
+    print('Start clustering!')
+    clustering(train_nfeat, 'K-mean')
 
     #init the cache server
     if args.cache_method == 'degree':
