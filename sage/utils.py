@@ -36,7 +36,7 @@ def Approx_prefix(input_features, parameter=0.5):
 # pytorch version
 def clustering(input_features, num_clusters, method):
     if method == 'K-mean':
-        cluster_ids_x, cluster_centers = kmeans(X=input_features, num_cluster=num_clusters, distance='euclidean', device=torch.device('cuda:0'))
+        cluster_ids_x, cluster_centers = kmeans(X=input_features, num_clusters=num_clusters, distance='euclidean', device=torch.device('cuda:0'))
         return cluster_ids_x, cluster_centers
         # plot_clusters(X, y)
 
