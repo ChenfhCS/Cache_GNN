@@ -10,7 +10,7 @@ import time
 import argparse
 import tqdm
 
-from utils import clustering
+from utils import clustering, reset_features
 from model import SAGE
 from load_data import load_reddit, inductive_split, load_ogb
 from DegCacheServer import DegCacheServer
@@ -61,7 +61,19 @@ def run(args, device, data):
 
     # clustering
     print('Start clustering!')
-    clustering(train_nfeat, 'K-mean')
+    # # pytorch version
+    # cluster_time = time.time()
+    # cluster_idx_x, cluster_centers = clustering(train_nfeat, 20, 'K-mean')
+    # print('Clustering Time(s): {:.4f}'.format(time.time() - cluster_time))
+    # train_nfeat = reset_features(train_nfeat, cluster_idx_x, cluster_centers)
+    # print(cluster_idx_x[:100])
+
+    # sklearn version
+    cluster_time = time.time()
+    cluster_results = clustering(train_nfeat, 500, 'K-mean')
+    print('Clustering Time(s): {:.4f}'.format(time.time() - cluster_time))
+    train_nfeat = reset_features(train_nfeat, cluster_results)
+    print(cluster_results.labels_[:100])
 
     #init the cache server
     if args.cache_method == 'degree':
