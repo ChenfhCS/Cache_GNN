@@ -147,6 +147,7 @@ class GCN(nn.Module):
                 agg_cost, comp_cost, h = layer(h)
             t_agg += agg_cost
             t_comp += comp_cost
+        print(t_agg, t_comp)
         return t_agg, t_comp, h
     
     def cache_init(self, g, h, dropout):
