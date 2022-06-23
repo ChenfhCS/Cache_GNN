@@ -110,7 +110,7 @@ def main(args):
         if epoch >= 3:
             t0 = time.time()
         # forward
-        if args['cache'] == False:
+        if args['cache'] == False and to_cuda == True:
             features.to(args['gpu'])
         t_agg, t_comp, logits = model(features)
         loss = loss_fcn(logits[train_mask], labels[train_mask])
