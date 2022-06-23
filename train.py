@@ -97,7 +97,7 @@ def main(args):
     # use optimizer
     optimizer = torch.optim.Adam(model.parameters(),
                                  lr=args['lr'],
-                                 weight_decay=args.weight_decay)
+                                 weight_decay=args['weight_decay'])
 
     # initialize graph
     dur = []
