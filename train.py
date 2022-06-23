@@ -18,7 +18,7 @@ np.set_printoptions(threshold=np.inf)
 def evaluate(model, features, labels, mask):
     model.eval()
     with torch.no_grad():
-        logits = model(features)
+        _, _, logits = model(features)
         logits = logits[mask]
         labels = labels[mask]
         _, indices = torch.max(logits, dim=1)
