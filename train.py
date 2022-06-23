@@ -99,11 +99,12 @@ def main(args):
               train_mask.int().sum().item(),
               val_mask.int().sum().item(),
               test_mask.int().sum().item()))
-
+    print('load dataset complete!')
     # add self loop
     g = dgl.remove_self_loop(g)
     g = dgl.add_self_loop(g)
-    n_edges = g.number_of_edges()
+    print('Add self loop!')
+    # n_edges = g.number_of_edges()
 
     # # normalization
     # degs = g.in_degrees().float()
@@ -125,7 +126,7 @@ def main(args):
                 to_cuda,
                 F.relu,
                 args['dropout'])
-
+    print('Model initialize complete!')
     if to_cuda:
         model.to(args['gpu'])
     loss_fcn = torch.nn.CrossEntropyLoss()
