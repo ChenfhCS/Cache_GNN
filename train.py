@@ -208,7 +208,7 @@ if __name__ == '__main__':
             help="gpu")
     parser.add_argument("--lr", type=float, default=1e-2,
             help="learning rate")
-    parser.add_argument("--n-epochs", type=int, default=20,
+    parser.add_argument("--n-epochs", type=int, default=100,
             help="number of training epochs")
     parser.add_argument("--n-hidden", type=int, default=16,
             help="number of hidden gcn units")
