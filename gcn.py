@@ -81,10 +81,9 @@ class GCNLayer(nn.Module):
     def forward(self, h):
         # modified graph convolutional operations
 
-
-        # if self.cache == False:
-        #     # step1: aggregation
-        #     h = torch.mm(self.adj, h)
+        if self.cache == False:
+            # step1: aggregation
+            h = torch.mm(self.adj, h)
 
         # step2: dropout
         if self.dropout:
