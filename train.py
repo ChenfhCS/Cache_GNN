@@ -14,19 +14,7 @@ from gcn import GCN
 
 np.set_printoptions(threshold=np.inf)
 
-
-def evaluate(model, features, labels, mask):
-    model.eval()
-    with torch.no_grad():
-        _, _, _, _, logits = model(features)
-        logits = logits[mask]
-        labels = labels[mask]
-        _, indices = torch.max(logits, dim=1)
-        correct = torch.sum(indices == labels)
-        return correct.item() * 1.0 / len(labels)
-
-def main(args):
-    # load and preprocess dataset
+def load_dataset(args):
     if args['dataset'] == 'cora':
         data = CoraGraphDataset()
     elif args['dataset'] == 'citeseer':
@@ -44,7 +32,46 @@ def main(args):
         category = data.predict_category
     else:
         raise ValueError('Unknown dataset: {}'.format(args['dataset']))
+    
+    # try
+    # data = DglNodePropPredDataset(name=name, root=root)
+    # print('finish loading', name)
+    # splitted_idx = data.get_idx_split()
+    # graph, labels = data[0]
+    # labels = labels[:, 0]
 
+    # graph.ndata['features'] = graph.ndata.pop('feat')
+    # graph.ndata['labels'] = labels
+    # in_feats = graph.ndata['features'].shape[1]
+    # num_labels = len(th.unique(labels[th.logical_not(th.isnan(labels))]))
+
+    # # Find the node IDs in the training, validation, and test set.
+    # train_nid, val_nid, test_nid = splitted_idx['train'], splitted_idx['valid'], splitted_idx['test']
+    # train_mask = th.zeros((graph.number_of_nodes(),), dtype=th.bool)
+    # train_mask[train_nid] = True
+    # val_mask = th.zeros((graph.number_of_nodes(),), dtype=th.bool)
+    # val_mask[val_nid] = True
+    # test_mask = th.zeros((graph.number_of_nodes(),), dtype=th.bool)
+    # test_mask[test_nid] = True
+    # graph.ndata['train_mask'] = train_mask
+    # graph.ndata['val_mask'] = val_mask
+    # graph.ndata['test_mask'] = test_mask
+    return data
+
+def evaluate(model, features, labels, mask):
+    model.eval()
+    with torch.no_grad():
+        _, _, _, _, logits = model(features)
+        logits = logits[mask]
+        labels = labels[mask]
+        _, indices = torch.max(logits, dim=1)
+        correct = torch.sum(indices == labels)
+        return correct.item() * 1.0 / len(labels)
+
+def main(args):
+    # load and preprocess dataset
+
+    data = load_dataset(args)
     g = data[0]
     if args['gpu'] < 0:
         to_cuda = False
@@ -52,19 +79,11 @@ def main(args):
         to_cuda = True
         g = g.to(args['gpu'])
 
-    if args['dataset'] == 'muta':
-        features = g.nodes[category].data['feat']
-        labels = g.nodes[category].data['label']
-        train_mask = g.nodes[category].data['train_mask']
-        val_mask = g.nodes[category].data['val_mask']
-        test_mask = g.nodes[category].data['test_mask']
-    
-    else:
-        features = g.ndata['feat']
-        labels = g.ndata['label']
-        train_mask = g.ndata['train_mask']
-        val_mask = g.ndata['val_mask']
-        test_mask = g.ndata['test_mask']
+    features = g.ndata['feat']
+    labels = g.ndata['label']
+    train_mask = g.ndata['train_mask']
+    val_mask = g.ndata['val_mask']
+    test_mask = g.ndata['test_mask']
 
 
     in_feats = features.shape[1]
