@@ -6,7 +6,7 @@ import torch
 import torch.nn.functional as F
 import dgl
 from dgl.data import register_data_args
-from dgl.data import CoraGraphDataset, CiteseerGraphDataset, PubmedGraphDataset, RedditDataset
+from dgl.data import CoraGraphDataset, CiteseerGraphDataset, PubmedGraphDataset, RedditDataset, KarateClubDataset
 
 from gcn import GCN
 #from gcn_mp import GCN
@@ -35,6 +35,8 @@ def main(args):
         data = PubmedGraphDataset()
     elif args['dataset'] == 'reddit':
         data = RedditDataset()
+    elif args['dataset'] == 'karate':
+        data = KarateClubDataset()
     elif args['dataset'] == 'muta':
         data = dgl.data.MUTAGDataset()
         category = data.predict_category
