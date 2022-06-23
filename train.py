@@ -195,7 +195,7 @@ def main(args):
     if args['save']:
         dataframe = pd.DataFrame(time_x, columns=['X'])
         dataframe = pd.concat([dataframe, pd.DataFrame(Accuracy,columns=['Y'])],axis=1)
-        dataframe.to_csv('{}_cache_{}.csv'.format(args['dataset'], args['cache']))
+        dataframe.to_csv('/result/{}_cache_{}.csv'.format(args['dataset'], args['cache']))
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='GCN')
