@@ -18,7 +18,7 @@ np.set_printoptions(threshold=np.inf)
 def evaluate(model, features, labels, mask):
     model.eval()
     with torch.no_grad():
-        _, _, logits = model(features)
+        _, _, _, logits = model(features)
         logits = logits[mask]
         labels = labels[mask]
         _, indices = torch.max(logits, dim=1)
@@ -102,9 +102,12 @@ def main(args):
     # initialize graph
     dur = []
     agg_time = []
+    agg_time_layer1 = []
+    agg_time_layer2 = []
     comp_time = []
     start = time.time()
     Accuracy = []
+
     for epoch in range(args['n_epochs']):
         model.train()
         if epoch >= 3:
@@ -112,10 +115,12 @@ def main(args):
         # forward
         if args['cache'] == False and to_cuda == True:
             features.to(args['gpu'])
-        t_agg, t_comp, logits = model(features)
+        t_agg_layer, t_agg, t_comp, logits = model(features)
         loss = loss_fcn(logits[train_mask], labels[train_mask])
         agg_time.append(t_agg)
         comp_time.append(t_comp)
+        agg_time_layer1.append(t_agg_layer[0])
+        agg_time_layer2.append(t_agg_layer[1])
 
         optimizer.zero_grad()
         loss.backward()
@@ -133,8 +138,8 @@ def main(args):
     acc = evaluate(model, features, labels, test_mask)
     print("Test Accuracy {:.4f}".format(acc))
     print("Time Cost {:.4f}".format(time.time() - start))
-    print("Test Accuracy {:.4f} | Time Cost {:.4f} | Aggregation {:.2f} | Reduce {:.2f} | ".format(
-        acc, time.time() - start, np.mean(agg_time), np.mean(comp_time)
+    print("Test Accuracy {:.4f} | Time Cost {:.4f} | Aggregation (l1: {:.4f}, l2: {:.4f}, all: {:.4f}) | Reduce {:.4f} | ".format(
+        acc, time.time() - start, np.mean(agg_time_layer1), np.mean(agg_time_layer2), np.mean(agg_time), np.mean(comp_time)
     ))
     if args['save']:
         df = pd.DataFrame(np.array(Accuracy))
