@@ -80,23 +80,30 @@ class GCNLayer(nn.Module):
 
     def forward(self, h):
         # modified graph convolutional operations
+        t_agg = 0
+        t_comp = 0
 
         if self.cache == False:
             # step1: aggregation
+            start_time = time.time()
             h = torch.mm(self.adj, h)
+            t_agg += time.time() - start_time
+
 
         # step2: dropout
         if self.dropout:
             h = self.dropout(h)
 
         # step3: reduce
+        start_time = time.time()
         h = torch.mm(h, self.weight)
+        t_comp += time.time() - start_time
 
         # step4: activation
         if self.activation:
             h = self.activation(h)
 
-        return h
+        return t_agg, t_comp, h
 
 class GCN(nn.Module):
     def __init__(self,
@@ -127,16 +134,20 @@ class GCN(nn.Module):
 
     def forward(self, features):
         h = features
+        t_agg = 0
+        t_comp = 0
         for i, layer in enumerate(self.layers):
             if i == 0:
                 if self.Cache:
-                    h = layer(self.cache)
+                    agg_cost, comp_cost, h = layer(self.cache)
                 else:
-                    h = layer(h)
+                    agg_cost, comp_cost, h = layer(h)
                 # print(h.data.numpy())
             else:
-                h = layer(h)
-        return h
+                agg_cost, comp_cost, h = layer(h)
+            t_agg += agg_cost
+            t_comp += comp_cost
+        return t_agg, t_comp, h
     
     def cache_init(self, g, h, dropout):
         if self.cuda:
