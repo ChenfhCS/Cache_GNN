@@ -35,6 +35,8 @@ def main(args):
         data = PubmedGraphDataset()
     elif args['dataset'] == 'reddit':
         data = RedditDataset()
+    elif args['dataset'] == 'muta':
+        data = dgl.data.rdf.MUTAGDataset()
     else:
         raise ValueError('Unknown dataset: {}'.format(args['dataset']))
 
