@@ -138,7 +138,7 @@ def main(args):
     acc = evaluate(model, features, labels, test_mask)
     print("Test Accuracy {:.4f}".format(acc))
     print("Time Cost {:.4f}".format(time.time() - start))
-    print("Test Accuracy {:.4f} | Time Cost {:.4f} | Aggregation (l1: {:.4f}, l2: {:.4f}, all: {:.4f}) | Reduce {:.4f} | ".format(
+    print("Test Accuracy {:.4f} | Time Cost {:.4f} | Aggregation (l1: {:.4f}, l2: {:.4f}, all: {:.4f}) | Reduce {:.4f} ".format(
         acc, time.time() - start, np.mean(agg_time_layer1), np.mean(agg_time_layer2), np.mean(agg_time), np.mean(comp_time)
     ))
     if args['save']:
@@ -156,7 +156,7 @@ if __name__ == '__main__':
             help="gpu")
     parser.add_argument("--lr", type=float, default=1e-2,
             help="learning rate")
-    parser.add_argument("--n-epochs", type=int, default=200,
+    parser.add_argument("--n-epochs", type=int, default=20,
             help="number of training epochs")
     parser.add_argument("--n-hidden", type=int, default=16,
             help="number of hidden gcn units")
