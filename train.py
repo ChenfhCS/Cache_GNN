@@ -53,7 +53,6 @@ def main(args):
     in_feats = features.shape[1]
     n_classes = data.num_labels
     n_edges = data.graph.number_of_edges()
-    print(features[0][:100])
     print("""----Data statistics------'
       #Edges %d
       #Classes %d
@@ -79,6 +78,7 @@ def main(args):
     # g.ndata['norm'] = norm.unsqueeze(1)
 
     # create GCN model
+    # print(features.numpy())
     model = GCN(g,
                 in_feats,
                 args.n_hidden,
@@ -134,7 +134,7 @@ def main(args):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='GCN')
     # register_data_args(parser)
-    parser.add_argument("--dataset", type=str, default="cora",
+    parser.add_argument("--dataset", type=str, default="citeseer",
             help="Datasets:('cora', 'pumbed', 'reddit')")
     parser.add_argument("--dropout", type=float, default=0.5,
             help="dropout probability")

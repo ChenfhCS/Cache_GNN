@@ -134,7 +134,7 @@ class GCN(nn.Module):
                     h = layer(self.cache)
                 else:
                     h = layer(h)
-                print(h.data.numpy())
+                # print(h.data.numpy())
             else:
                 h = layer(h)
         return h
