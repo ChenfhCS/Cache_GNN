@@ -36,7 +36,7 @@ def main(args):
     elif args['dataset'] == 'reddit':
         data = RedditDataset()
     elif args['dataset'] == 'muta':
-        data = dgl.data.rdf.MUTAGDataset()
+        data = dgl.data.MUTAGDataset()
     else:
         raise ValueError('Unknown dataset: {}'.format(args['dataset']))
 
