@@ -99,7 +99,7 @@ class GCNLayer(nn.Module):
         start_time = time.time()
         h = torch.mm(h, self.weight)
         t_comp += time.time() - start_time
-        print("step 1 reduction: {}x{}, time cost:{}".format(h.shape() self.weight.shape(), t_comp))
+        print("step 1 reduction: {}x{}, time cost:{}".format(h.shape(), self.weight.shape(), t_comp))
 
         # step4: activation
         if self.activation:
