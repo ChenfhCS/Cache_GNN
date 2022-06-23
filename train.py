@@ -37,6 +37,7 @@ def main(args):
         data = RedditDataset()
     elif args['dataset'] == 'muta':
         data = dgl.data.MUTAGDataset()
+        category = data.predict_category
     else:
         raise ValueError('Unknown dataset: {}'.format(args['dataset']))
 
@@ -47,11 +48,21 @@ def main(args):
         to_cuda = True
         g = g.to(args['gpu'])
 
-    features = g.ndata['feat']
-    labels = g.ndata['label']
-    train_mask = g.ndata['train_mask']
-    val_mask = g.ndata['val_mask']
-    test_mask = g.ndata['test_mask']
+    if args['dataset'] == 'muta':
+        features = g.nodes[category].data['feat']
+        labels = g.nodes[category].data['label']
+        train_mask = g.nodes[category].data['train_mask']
+        val_mask = g.nodes[category].data['val_mask']
+        test_mask = g.nodes[category].data['test_mask']
+    
+    else:
+        features = g.ndata['feat']
+        labels = g.ndata['label']
+        train_mask = g.ndata['train_mask']
+        val_mask = g.ndata['val_mask']
+        test_mask = g.ndata['test_mask']
+
+
     in_feats = features.shape[1]
     n_classes = data.num_labels
     n_edges = data.graph.number_of_edges()
