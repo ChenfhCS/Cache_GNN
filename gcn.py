@@ -122,15 +122,19 @@ class GCN(nn.Module):
         super(GCN, self).__init__()
         self.layers = nn.ModuleList()
         # input layer
+        print('Initialize layer start!')
         self.layers.append(GCNLayer(g, in_feats, n_hidden, activation, dropout, cuda, cache=Cache))
         # hidden layers
         for i in range(n_layers - 1):
             self.layers.append(GCNLayer(g, n_hidden, n_hidden, activation, dropout, cuda))
         # output layer
+        print('Initialize final layer start!')
         self.layers.append(GCNLayer(g, n_hidden, n_classes, None, dropout, cuda))
+        print('Initialize layer complete!')
 
         self.Cache = Cache
         self.cuda = cuda
+        print('Initialize cache!')
         if Cache:
             self.agg_result = self.cache_init(g, features, dropout)
 
