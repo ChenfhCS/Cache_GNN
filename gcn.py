@@ -59,26 +59,27 @@ class GCNLayer(nn.Module):
         # self.node_update = NodeApplyModule(out_feats, activation, bias)
         self.reset_parameters()
 
-        if cuda:
-            self.adj = g.adj().to_dense().cuda()
-        else:
-            self.adj = g.adj().to_dense()
+        # if cuda:
+        #     self.adj = g.adj().to_dense().cuda()
+        # else:
+        #     self.adj = g.adj().to_dense()
         self.activation = activation
         self.cache = cache
 
         # normalization
-        degs = g.in_degrees().float()  # degrees of all nodes (1-dimension tensor)
-        norm = torch.pow(degs, -0.5)  # 
-        norm_tilde = torch.diag(norm) # 
-        if cuda:
-            norm_tilde.cuda()
-        self.adj = torch.mm(torch.mm(norm_tilde, self.adj), norm_tilde)  # D^(-0/5) * A * D^(-0/5)
+
+        # degs = g.in_degrees().float()  # degrees of all nodes (1-dimension tensor)
+        # norm = torch.pow(degs, -0.5)  # 
+        # norm_tilde = torch.diag(norm) # 
+        # if cuda:
+        #     norm_tilde.cuda()
+        # self.adj = torch.mm(torch.mm(norm_tilde, self.adj), norm_tilde)  # D^(-0/5) * A * D^(-0/5)
 
     def reset_parameters(self):
         stdv = 1. / math.sqrt(self.weight.size(1))
         self.weight.data.uniform_(-stdv, stdv)
 
-    def forward(self, h):
+    def forward(self, adj, h):
         # modified graph convolutional operations
         t_agg = 0
         t_comp = 0
@@ -86,7 +87,7 @@ class GCNLayer(nn.Module):
         if self.cache == False:
             # step1: aggregation
             start_time = time.time()
-            h = torch.mm(self.adj, h)
+            h = torch.mm(adj, h)
             t_agg += time.time() - start_time
             # print("step 1 aggregation: {}x{}, time cost:{}".format(self.adj.size(), h.size(), t_agg))
 
@@ -135,6 +136,18 @@ class GCN(nn.Module):
         self.Cache = Cache
         self.cuda = cuda
         print('Initialize cache!')
+
+        if cuda:
+            self.adj = g.adj().to_dense().cuda()
+        else:
+            self.adj = g.adj().to_dense()
+        degs = g.in_degrees().float()  # degrees of all nodes (1-dimension tensor)
+        norm = torch.pow(degs, -0.5)  # 
+        norm_tilde = torch.diag(norm) # 
+        if cuda:
+            norm_tilde.cuda()
+        self.adj = torch.mm(torch.mm(norm_tilde, self.adj), norm_tilde)  # D^(-0/5) * A * D^(-0/5)
+
         if Cache:
             self.agg_result = self.cache_init(g, features, dropout)
 
@@ -147,9 +160,9 @@ class GCN(nn.Module):
         for i, layer in enumerate(self.layers):
             # print("Layer ", i)
             if layer.cache:
-                agg_cost, comp_cost, h = layer(self.agg_result)
+                agg_cost, comp_cost, h = layer(self.adj, self.agg_result)
             else:
-                agg_cost, comp_cost, h = layer(h)
+                agg_cost, comp_cost, h = layer(self.adj, h)
             t_agg += agg_cost
             t_comp += comp_cost
             t_agg_layer.append(agg_cost)
@@ -158,21 +171,9 @@ class GCN(nn.Module):
         return t_agg_layer, t_comp_layer, t_agg, t_comp, h
     
     def cache_init(self, g, h, dropout):
-        if self.cuda:
-            adj = g.adj().to_dense().cuda()
-        else:
-            adj = g.adj().to_dense()
-
-        # normalization
-        degs = g.in_degrees().float()  # degrees of all nodes (1-dimension tensor)
-        norm = torch.pow(degs, -0.5)  # 
-        norm_tilde = torch.diag(norm) # 
-        if self.cuda:
-            norm_tilde.cuda()
-        adj = torch.mm(torch.mm(norm_tilde, adj), norm_tilde)  # D^(-0/5) * A * D^(-0/5)
         
         # step2: aggregation
-        cache_content = torch.mm(adj, h)
+        cache_content = torch.mm(self.adj, h)
 
         return cache_content
 

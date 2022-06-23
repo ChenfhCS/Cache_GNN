@@ -116,6 +116,7 @@ def main(args):
 
     # create GCN model
     # print(features.numpy())
+    print('Model initialize complete!')
     model = GCN(g,
                 in_feats,
                 args['n_hidden'],
