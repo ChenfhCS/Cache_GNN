@@ -88,6 +88,7 @@ class GCNLayer(nn.Module):
             start_time = time.time()
             h = torch.mm(self.adj, h)
             t_agg += time.time() - start_time
+            print("step 1 aggregation: {}x{}, time cost:{}".format(self.adj.shape(), h.shape(), t_agg))
 
 
         # step2: dropout
@@ -98,6 +99,7 @@ class GCNLayer(nn.Module):
         start_time = time.time()
         h = torch.mm(h, self.weight)
         t_comp += time.time() - start_time
+        print("step 1 reduction: {}x{}, time cost:{}".format(h.shape() self.weight.shape(), t_comp))
 
         # step4: activation
         if self.activation:
@@ -130,20 +132,21 @@ class GCN(nn.Module):
         self.Cache = Cache
         self.cuda = cuda
         if Cache:
-            self.cache = self.cache_init(g, features, dropout)
+            self.agg_result = self.cache_init(g, features, dropout)
 
     def forward(self, features):
         h = features
         t_agg = 0
         t_comp = 0
         for i, layer in enumerate(self.layers):
+            print("Layer ", i)
             if layer.cache:
-                agg_cost, comp_cost, h = layer(self.cache)
+                agg_cost, comp_cost, h = layer(self.agg_result)
             else:
                 agg_cost, comp_cost, h = layer(h)
             t_agg += agg_cost
             t_comp += comp_cost
-            print(t_agg, t_comp, h.size(), self.cuda)
+            # print(t_agg, t_comp, h.size(), self.cuda)
         return t_agg, t_comp, h
     
     def cache_init(self, g, h, dropout):
