@@ -144,10 +144,13 @@ def main(args):
     comp_time_layer2 = []
     comp_time = []
     # start = time.time()
-    Accuracy = []
+    Accuracy = [0]
     epoch_time = []
-    data_load_time = []
+    data_load_time = [0 for i in range(args['n_epochs'])]
+    time_x = [0]
+    start_x = time.time()
     for epoch in range(args['n_epochs']):
+
         start = time.time()
         model.train()
         if epoch >= 3:
@@ -156,13 +159,16 @@ def main(args):
         if args['cache'] == False and to_cuda == True:
             start_time = time.time()
             features.to(args['gpu'])
-            data_load_time.append(time.time() - start_time)
+            data_load_time[epoch] += (time.time() - start_time)
         t_agg_layer, t_comp_layer, t_agg, t_comp, logits = model(features)
         loss = loss_fcn(logits[train_mask], labels[train_mask])
 
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
+        acc = evaluate(model, features, labels, val_mask)
+        Accuracy.append(acc)
+        time_x.append(time.time()-start_x)
 
         agg_time.append(t_agg)
         comp_time.append(t_comp)
@@ -175,11 +181,9 @@ def main(args):
         if epoch >= 3:
             dur.append(time.time() - t0)
 
-        acc = evaluate(model, features, labels, val_mask)
         print("Epoch {:05d} | Time(s) {:.4f} | Loss {:.4f} | Accuracy {:.4f} | "
               "ETputs(KTEPS) {:.2f}". format(epoch, np.mean(dur), loss.item(),
                                              acc, n_edges / np.mean(dur) / 1000))
-        Accuracy.append(acc)
     print()
     acc = evaluate(model, features, labels, test_mask)
     print("Test Accuracy {:.4f}".format(acc))
@@ -189,8 +193,9 @@ def main(args):
         np.mean(comp_time_layer1), np.mean(comp_time_layer2), np.mean(comp_time), np.mean(data_load_time)
     ))
     if args['save']:
-        df = pd.DataFrame(np.array(Accuracy))
-        df.to_csv('{}_cache_{}.csv'.format(args['dataset'], args['cache']))
+        dataframe = pd.DataFrame(time_x, columns=['X'])
+        dataframe = pd.concat([dataframe, pd.DataFrame(Accuracy,columns=['Y'])],axis=1)
+        dataframe.to_csv('{}_cache_{}.csv'.format(args['dataset'], args['cache']))
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='GCN')
@@ -213,7 +218,7 @@ if __name__ == '__main__':
             help="Weight for L2 loss")
     parser.add_argument("--cache", type=bool, default=False,
             help="Cache the aggregated content for the first layer")    
-    parser.add_argument("--save", type=bool, default=False,
+    parser.add_argument("--save", type=bool, default=True,
             help="Save accuracy to csv file")    
     args = vars(parser.parse_args())
 
