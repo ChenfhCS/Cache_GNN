@@ -139,6 +139,7 @@ class GCN(nn.Module):
         t_agg = 0
         t_comp = 0
         t_agg_layer = []
+        t_comp_layer = []
         for i, layer in enumerate(self.layers):
             # print("Layer ", i)
             if layer.cache:
@@ -148,8 +149,9 @@ class GCN(nn.Module):
             t_agg += agg_cost
             t_comp += comp_cost
             t_agg_layer.append(agg_cost)
+            t_comp_layer.append(comp_cost)
             # print(agg_cost, comp_cost, h.size(), self.cuda)
-        return t_agg_layer, t_agg, t_comp, h
+        return t_agg_layer, t_comp_layer, t_agg, t_comp, h
     
     def cache_init(self, g, h, dropout):
         if self.cuda:
