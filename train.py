@@ -105,10 +105,12 @@ def main(args):
     agg_time_layer1 = []
     agg_time_layer2 = []
     comp_time = []
-    start = time.time()
+    # start = time.time()
     Accuracy = []
+    epoch_time = []
 
     for epoch in range(args['n_epochs']):
+        start = time.time()
         model.train()
         if epoch >= 3:
             t0 = time.time()
@@ -117,14 +119,17 @@ def main(args):
             features.to(args['gpu'])
         t_agg_layer, t_agg, t_comp, logits = model(features)
         loss = loss_fcn(logits[train_mask], labels[train_mask])
+
+        optimizer.zero_grad()
+        loss.backward()
+        optimizer.step()
+
         agg_time.append(t_agg)
         comp_time.append(t_comp)
         agg_time_layer1.append(t_agg_layer[0])
         agg_time_layer2.append(t_agg_layer[1])
 
-        optimizer.zero_grad()
-        loss.backward()
-        optimizer.step()
+        epoch_time.append(time.time() - start)
 
         if epoch >= 3:
             dur.append(time.time() - t0)
@@ -139,7 +144,7 @@ def main(args):
     print("Test Accuracy {:.4f}".format(acc))
     print("Time Cost {:.4f}".format(time.time() - start))
     print("Test Accuracy {:.4f} | Time Cost {:.4f} | Aggregation (l1: {:.4f}, l2: {:.4f}, all: {:.4f}) | Reduce {:.4f} ".format(
-        acc, time.time() - start, np.mean(agg_time_layer1), np.mean(agg_time_layer2), np.mean(agg_time), np.mean(comp_time)
+        acc, np.mean(epoch_time), np.mean(agg_time_layer1), np.mean(agg_time_layer2), np.mean(agg_time), np.mean(comp_time)
     ))
     if args['save']:
         df = pd.DataFrame(np.array(Accuracy))
