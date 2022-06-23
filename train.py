@@ -108,6 +108,8 @@ def main(args):
         if epoch >= 3:
             t0 = time.time()
         # forward
+        if args.cache == False:
+            features.to(args.gpu)
         logits = model(features)
         loss = loss_fcn(logits[train_mask], labels[train_mask])
 
