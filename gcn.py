@@ -137,12 +137,8 @@ class GCN(nn.Module):
         t_agg = 0
         t_comp = 0
         for i, layer in enumerate(self.layers):
-            if i == 0:
-                if self.Cache:
-                    agg_cost, comp_cost, h = layer(self.cache)
-                else:
-                    agg_cost, comp_cost, h = layer(h)
-                # print(h.data.numpy())
+            if layer.cache:
+                agg_cost, comp_cost, h = layer(self.cache)
             else:
                 agg_cost, comp_cost, h = layer(h)
             t_agg += agg_cost
