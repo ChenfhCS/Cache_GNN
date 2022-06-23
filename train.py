@@ -27,23 +27,23 @@ def evaluate(model, features, labels, mask):
 
 def main(args):
     # load and preprocess dataset
-    if args.dataset == 'cora':
+    if args['dataset'] == 'cora':
         data = CoraGraphDataset()
-    elif args.dataset == 'citeseer':
+    elif args['dataset'] == 'citeseer':
         data = CiteseerGraphDataset()
-    elif args.dataset == 'pubmed':
+    elif args['dataset'] == 'pubmed':
         data = PubmedGraphDataset()
-    elif args.dataset == 'reddit':
+    elif args['dataset'] == 'reddit':
         data = RedditDataset()
     else:
-        raise ValueError('Unknown dataset: {}'.format(args.dataset))
+        raise ValueError('Unknown dataset: {}'.format(args['dataset']))
 
     g = data[0]
-    if args.gpu < 0:
+    if args['gpu'] < 0:
         to_cuda = False
     else:
         to_cuda = True
-        g = g.to(args.gpu)
+        g = g.to(args['gpu'])
 
     features = g.ndata['feat']
     labels = g.ndata['label']
@@ -81,17 +81,17 @@ def main(args):
     # print(features.numpy())
     model = GCN(g,
                 in_feats,
-                args.n_hidden,
+                args['n_hidden'],
                 n_classes,
-                args.n_layers,
+                args['n_layers'],
                 features,
-                args.cache,
+                args['cache'],
                 to_cuda,
                 F.relu,
-                args.dropout)
+                args['dropout'])
 
     if to_cuda:
-        model.to(args.gpu)
+        model.to(args['gpu'])
     loss_fcn = torch.nn.CrossEntropyLoss()
 
     # use optimizer
@@ -101,17 +101,21 @@ def main(args):
 
     # initialize graph
     dur = []
+    agg_time = []
+    comp_time = []
     start = time.time()
     Accuracy = []
-    for epoch in range(args.n_epochs):
+    for epoch in range(args['n_epochs']):
         model.train()
         if epoch >= 3:
             t0 = time.time()
         # forward
-        if args.cache == False:
-            features.to(args.gpu)
-        logits = model(features)
+        if args['cache'] == False:
+            features.to(args['gpu'])
+        t_agg, t_comp, logits = model(features)
         loss = loss_fcn(logits[train_mask], labels[train_mask])
+        agg_time.append(t_agg)
+        comp_time.append(t_comp)
 
         optimizer.zero_grad()
         loss.backward()
@@ -129,9 +133,12 @@ def main(args):
     acc = evaluate(model, features, labels, test_mask)
     print("Test Accuracy {:.4f}".format(acc))
     print("Time Cost {:.4f}".format(time.time() - start))
-    if args.save:
+    print("Test Accuracy {:.4f} | Time Cost {:.4f} | Aggregation {:.2f} | Reduce {:.2f} | ".format(
+        acc, time.time() - start, np.mean(agg_time), np.mean(comp_time)
+    ))
+    if args['save']:
         df = pd.DataFrame(np.array(Accuracy))
-        df.to_csv('{}_cache_{}.csv'.format(args.dataset, args.cache))
+        df.to_csv('{}_cache_{}.csv'.format(args['dataset'], args['cache']))
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='GCN')
@@ -156,7 +163,8 @@ if __name__ == '__main__':
             help="Cache the aggregated content for the first layer")    
     parser.add_argument("--save", type=bool, default=False,
             help="Save accuracy to csv file")    
-    args = parser.parse_args()
+    args = vars(parser.parse_args())
+
     print(args)
 
     main(args)
