@@ -135,7 +135,6 @@ class GCN(nn.Module):
 
         self.Cache = Cache
         self.cuda = cuda
-        print('Initialize cache!')
 
         if cuda:
             self.adj = g.adj().to_dense().cuda()
@@ -148,6 +147,7 @@ class GCN(nn.Module):
             norm_tilde.cuda()
         self.adj = torch.mm(torch.mm(norm_tilde, self.adj), norm_tilde)  # D^(-0/5) * A * D^(-0/5)
 
+        print('Initialize cache!')
         if Cache:
             self.agg_result = self.cache_init(g, features, dropout)
 

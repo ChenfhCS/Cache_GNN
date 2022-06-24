@@ -190,7 +190,7 @@ def main(args):
     acc = evaluate(model, features, labels, test_mask)
     print("Test Accuracy {:.4f}".format(acc))
     print("Time Cost {:.4f}".format(time.time() - start))
-    print("Test Accuracy {:.4f} | Time Cost {:.4f} | Aggregation (l1: {:.4f}, l2: {:.4f}, all: {:.4f}) | Reduce (l1: {:.4f}, l2: {:.6f}, all: {:.4f}) | Loading {:.4f}".format(
+    print("Test Accuracy {:.4f} | Time Cost {:.6f} | Aggregation (l1: {:.6f}, l2: {:.6f}, all: {:.6f}) | Reduce (l1: {:.6f}, l2: {:.6f}, all: {:.6f}) | Loading {:.6f}".format(
         acc, np.mean(epoch_time), np.mean(agg_time_layer1), np.mean(agg_time_layer2), np.mean(agg_time),
         np.mean(comp_time_layer1), np.mean(comp_time_layer2), np.mean(comp_time), np.mean(data_load_time)
     ))
